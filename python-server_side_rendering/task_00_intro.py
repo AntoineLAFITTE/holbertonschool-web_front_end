@@ -1,42 +1,44 @@
 import os
+""" Task 0: Creating a Simple Templating Program """
 
 def generate_invitations(template, attendees):
-    # Check if the template is a string
-    if not isinstance(template, str):
-        print("Error: Template must be a string.")
+    try:
+        if not isinstance(template, str):
+            raise TypeError("Template is not a string.")
+
+        if not isinstance(attendees, list) or not all(
+            isinstance(attendee, dict) for attendee in attendees
+        ):
+            raise TypeError("Attendees should be a list of dictionaries.")
+    except TypeError as e:
+        print(f"Error: {e}")
         return
 
-    # Check if attendees is a list of dictionaries
-    if not isinstance(attendees, list) or not all(
-        isinstance(attendee, dict) for attendee in attendees):
-        print("Error: Attendees must be a list of dictionaries.")
+    try:
+        if not template.strip():
+            raise ValueError("Template is empty, no output files generated.")
+
+        if not attendees:
+            raise ValueError("No data provided, no output files generated.")
+    except ValueError as e:
+        print(f"Error: {e}")
         return
 
-    # Check if template is empty
-    if not template.strip():
-        print("Error: Template is empty, no output files generated.")
-        return
+    for i, attendee in enumerate(attendees, start=1):
+        output_content = template
+        for key in ["name", "event_title", "event_date", "event_location"]:
+            placeholder = "{" + key + "}"
+            value = attendee.get(key, "N/A")
+            if value is None:
+                value = "N/A"
+            output_content = output_content.replace(placeholder, value)
 
-    # Check if attendees list is empty
-    if not attendees:
-        print("No data provided, no output files generated.")
-        return
+        output_filename = f"output_{i}.txt"
+        if os.path.exists(output_filename):
+            print(
+                f"Warning: {output_filename} already exists. Skipping file creation."
+            )
+            continue
 
-    # Iterate over each attendee
-    for index, attendee in enumerate(attendees, start=1):
-        # Replace placeholders with values or "N/A" if value is missing
-        content = template.format(
-            name=attendee.get("name", "N/A"),
-            event_title=attendee.get("event_title", "N/A"),
-            event_date=attendee.get("event_date", "N/A"),
-            event_location=attendee.get("event_location", "N/A")
-        )
-
-        # Generate file name and write content to the file
-        filename = f"output_{index}.txt"
-        try:
-            with open(filename, "w") as file:
-                file.write(content)
-            print(f"Generated {filename}")
-        except Exception as e:
-            print(f"Error writing to {filename}: {e}")
+        with open(output_filename, 'w') as output_file:
+            output_file.write(output_content)
